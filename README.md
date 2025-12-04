@@ -1,1 +1,2 @@
-# Projeto_ESP32S3_V01.1
+# Projeto_ESP32S3
+Projeto de automação automotiva para segurança de condução
