@@ -9,7 +9,6 @@ bool buzzerState = false;
 unsigned long lastCustomBuzzerTime = 0;
 bool customBuzzerState = false;
 
-// --- NOVA VARIÁVEL DE CONTROLE ---
 // Guarda qual frequência está tocando no momento. 0 = silêncio.
 int currentActiveFreq = 0; 
 
@@ -19,12 +18,10 @@ void initBuzzer() {
 }
 
 void buzzerOff() {
-    // Só envia o comando de parar se estiver tocando algo
     if (currentActiveFreq != 0 || buzzerActive || customBuzzerState) {
         noTone(PIN_BUZZER);
         digitalWrite(PIN_BUZZER, LOW);
         
-        // Reseta todos os estados
         buzzerActive = false;
         buzzerState = false;
         customBuzzerState = false;
@@ -32,7 +29,7 @@ void buzzerOff() {
     }
 }
 
-// --- MODO ANTIGO (Simples - Alerta de Tela) ---
+// ... (Mantenha as funções setBuzzerAlert e handleBuzzerBeeping iguais) ...
 void setBuzzerAlert(bool state) {
     buzzerActive = state;
     if (!state) {
@@ -57,13 +54,9 @@ void handleBuzzerBeeping() {
     }
 }
 
-// --- NOVO MODO CUSTOMIZADO (Para a Roda) ---
+// ... (Mantenha buzzerCustomTone igual para compatibilidade) ...
 void buzzerCustomTone(int frequency, int intervalMs) {
-    // Caso 1: Som Contínuo
     if (intervalMs == 0) {
-        // CORREÇÃO DO FLICKER:
-        // Só chama tone() se a frequência for diferente da atual.
-        // Se já estiver tocando 800Hz, não faz nada (mantém estável).
         if (currentActiveFreq != frequency) {
             tone(PIN_BUZZER, frequency);
             currentActiveFreq = frequency;
@@ -71,24 +64,62 @@ void buzzerCustomTone(int frequency, int intervalMs) {
         return;
     }
 
-    // Caso 2: Som Intermitente (Bipando)
     unsigned long current = millis();
     if (current - lastCustomBuzzerTime >= intervalMs) {
         lastCustomBuzzerTime = current;
         customBuzzerState = !customBuzzerState;
         
         if (customBuzzerState) {
-            // Hora de ligar o som
             if (currentActiveFreq != frequency) {
                 tone(PIN_BUZZER, frequency);
                 currentActiveFreq = frequency;
             }
         } else {
-            // Hora de silenciar
             if (currentActiveFreq != 0) {
                 noTone(PIN_BUZZER);
                 currentActiveFreq = 0;
             }
+        }
+    }
+}
+
+// --- NOVA FUNÇÃO MELÓDICA ---
+void buzzerMelodicTone(int startFreq, int endFreq, int intervalMs) {
+    // Se intervalo for 0, trata como tom contínuo fixo na frequência final
+    if (intervalMs == 0) {
+        buzzerCustomTone(endFreq, 0);
+        return;
+    }
+
+    unsigned long current = millis();
+    
+    // Gerencia o tempo de Ligar/Desligar (Blink)
+    if (current - lastCustomBuzzerTime >= intervalMs) {
+        lastCustomBuzzerTime = current;
+        customBuzzerState = !customBuzzerState;
+        
+        // Se desligou, silencia imediatamente
+        if (!customBuzzerState) {
+            if (currentActiveFreq != 0) {
+                noTone(PIN_BUZZER);
+                currentActiveFreq = 0;
+            }
+        }
+    }
+
+    // Se está no estado LIGADO, calcula a frequência atual (Sweep)
+    if (customBuzzerState) {
+        unsigned long elapsed = current - lastCustomBuzzerTime;
+        if (elapsed > intervalMs) elapsed = intervalMs;
+
+        // Interpolação linear de startFreq até endFreq
+        float progress = (float)elapsed / (float)intervalMs; 
+        int currentFreq = startFreq + (int)((endFreq - startFreq) * progress);
+
+        // Atualiza o tom se a frequência mudou
+        if (currentActiveFreq != currentFreq) {
+            tone(PIN_BUZZER, currentFreq);
+            currentActiveFreq = currentFreq;
         }
     }
 }

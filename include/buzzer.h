@@ -10,9 +10,12 @@ void initBuzzer();
 void setBuzzerAlert(bool state);
 void handleBuzzerBeeping();
 
-// NOVA FUNÇÃO: Controle preciso de tom e intervalo
-// se intervalMs == 0, toca contínuo.
+// Controle preciso de tom e intervalo (Frequência Fixa)
 void buzzerCustomTone(int frequency, int intervalMs);
+
+// NOVA FUNÇÃO: Efeito melódico (Sweep)
+// Faz uma transição de startFreq para endFreq durante o tempo ligado
+void buzzerMelodicTone(int startFreq, int endFreq, int intervalMs);
 
 // Para o som imediatamente
 void buzzerOff();

@@ -33,98 +33,81 @@ void loop() {
   bool modoFreioAtivo = lerBotaoFreio(); 
 
   // ==========================================
-  // CASO 1: MODO RODA (NOVA LÓGICA)
+  // CASO 1: MODO RODA (NOVA LÓGICA MELÓDICA)
   // ==========================================
   if (modoRodaAtivo) {
-      // Desliga relés externos
+      // ... (desliga relés igual) ...
       setRelay(MCP_RELE_PCE, RELE_DESLIGADO);
       setRelay(MCP_RELE_PCD, RELE_DESLIGADO);
       setRelay(MCP_RELE_FREIO, RELE_DESLIGADO);
       setRelay(MCP_RELE_PISCA, RELE_DESLIGADO);
 
       float distRoda = lerDistancia(TRIG_RODA, ECHO_RODA);
-      
       const char* imgFile = "";
-      
-      // Lógica de Distância vs Imagem vs Buzzer
-      // Usamos 'if else' em cascata para cobrir as faixas
       
       if (distRoda > 40) {
           imgFile = "/0B.bmp";
           buzzerOff();
       }
-      // <=40 e >=37 (Buzzer 400Hz / 700ms)
+      // ZONA 1 (Distante): Efeito 500Hz -> 400Hz
       else if (distRoda >= 37) {
           imgFile = "/1B.bmp";
-          buzzerCustomTone(FREQ_400HZ, SLOW_BIP_MS);
+          buzzerMelodicTone(500, 400, SLOW_BIP_MS);
       }
-      // <=36 e >=34
       else if (distRoda >= 34) {
           imgFile = "/2B.bmp";
-          buzzerCustomTone(FREQ_400HZ, SLOW_BIP_MS);
+          buzzerMelodicTone(500, 400, SLOW_BIP_MS);
       }
-      // <=33 e >=30
       else if (distRoda >= 30) {
           imgFile = "/3B.bmp";
-          buzzerCustomTone(FREQ_400HZ, SLOW_BIP_MS);
+          buzzerMelodicTone(500, 400, SLOW_BIP_MS);
       }
-      // <=29 e >=27
       else if (distRoda >= 27) {
           imgFile = "/4B.bmp";
-          buzzerCustomTone(FREQ_400HZ, ((SLOW_BIP_MS) - 100));
+          buzzerMelodicTone(500, 400, ((SLOW_BIP_MS) - 100));
       }
-      // <=26 e >=24
       else if (distRoda >= 24) {
           imgFile = "/5B.bmp";
-          buzzerCustomTone(FREQ_400HZ, ((SLOW_BIP_MS) - 100));
+          buzzerMelodicTone(500, 400, ((SLOW_BIP_MS) - 100));
       }
-      // <=23 e >=20
       else if (distRoda >= 20) {
           imgFile = "/6B.bmp";
-          buzzerCustomTone(FREQ_400HZ, ((SLOW_BIP_MS) - 150));
+          buzzerMelodicTone(500, 400, ((SLOW_BIP_MS) - 150));
       }
-      // <=19 e >=18 (Muda para 600Hz / 400ms)
+      // ZONA 2 (Média): Efeito 700Hz -> 600Hz (Um pouco mais agudo)
       else if (distRoda >= 18) {
           imgFile = "/7B.bmp";
-          buzzerCustomTone(FREQ_600HZ, FAST_BIP_MS);
+          buzzerMelodicTone(700, 600, FAST_BIP_MS);
       }
-      // <=17 e >=16
       else if (distRoda >= 16) {
           imgFile = "/8B.bmp";
-          buzzerCustomTone(FREQ_600HZ, FAST_BIP_MS);
+          buzzerMelodicTone(700, 600, FAST_BIP_MS);
       }
-      // <=15 e >=14
       else if (distRoda >= 14) {
           imgFile = "/9B.bmp";
-          buzzerCustomTone(FREQ_600HZ, ((FAST_BIP_MS)-100));
+          buzzerMelodicTone(700, 600, ((FAST_BIP_MS)-100));
       }
-      // <=14 e >=13 (Atenção: sobreposição com 14 acima, a ordem do if resolve)
       else if (distRoda >= 13) {
           imgFile = "/10B.bmp";
-          buzzerCustomTone(FREQ_600HZ, ((FAST_BIP_MS)-150));
+          buzzerMelodicTone(700, 600, ((FAST_BIP_MS)-150));
       }
-      // <=10 e >=9 (OBS: Há um buraco entre 13 e 10. Esta lógica cobrirá 12 e 11 com 10B até chegar em 10.9)
+      // ZONA 3 (Crítica): Som Contínuo Agudo (Mantém o padrão de alerta máximo)
       else if (distRoda >= 9) {
           imgFile = "/11B.bmp";
-          buzzerCustomTone(FREQ_800HZ, 0); // 0 = Contínuo (ou defina intervalo se necessário)
+          buzzerCustomTone(FREQ_800HZ, 0); 
       }
-      // <=9 e >=7
       else if (distRoda >= 7) {
           imgFile = "/12B.bmp";
           buzzerCustomTone(FREQ_800HZ, 0);
       }
-      // <7
       else if (distRoda > 0) {
           imgFile = "/13B.bmp";
           buzzerCustomTone(FREQ_800HZ, 0);
       }
       else {
-          // Leitura inválida ou 0
           buzzerOff();
-          // Mantém a última imagem ou limpa? Vamos manter para não piscar
       }
 
-      // Atualiza a tela se houver imagem válida
       if (strlen(imgFile) > 0) {
           updateWheelImage(imgFile);
       }
@@ -132,8 +115,7 @@ void loop() {
       lastDetectionEsq = 0;
       lastDetectionDir = 0;
       lastDetectionTras = 0;
-  }
-  
+  }  
   // ==========================================
   // CASO 2: MODO CONDUÇÃO
   // ==========================================
