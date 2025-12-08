@@ -52,44 +52,44 @@ void loop() {
       // ZONA 1 (Distante): Efeito 500Hz -> 400Hz
       else if (distRoda >= 37) {
           imgFile = "/1B.bmp";
-          buzzerMelodicTone(500, 400, SLOW_BIP_MS);
+          buzzerCustomTone(500, SLOW_BIP_MS);
       }
       else if (distRoda >= 34) {
           imgFile = "/2B.bmp";
-          buzzerMelodicTone(500, 400, SLOW_BIP_MS);
+          buzzerCustomTone(500, SLOW_BIP_MS);
       }
       else if (distRoda >= 30) {
           imgFile = "/3B.bmp";
-          buzzerMelodicTone(500, 400, SLOW_BIP_MS);
+          buzzerCustomTone(500, SLOW_BIP_MS);
       }
       else if (distRoda >= 27) {
           imgFile = "/4B.bmp";
-          buzzerMelodicTone(500, 400, ((SLOW_BIP_MS) - 100));
+          buzzerCustomTone(500, ((SLOW_BIP_MS) - 100));
       }
       else if (distRoda >= 24) {
           imgFile = "/5B.bmp";
-          buzzerMelodicTone(500, 400, ((SLOW_BIP_MS) - 100));
+          buzzerCustomTone(500, ((SLOW_BIP_MS) - 100));
       }
       else if (distRoda >= 20) {
           imgFile = "/6B.bmp";
-          buzzerMelodicTone(500, 400, ((SLOW_BIP_MS) - 150));
+          buzzerCustomTone(500, ((SLOW_BIP_MS) - 150));
       }
       // ZONA 2 (Média): Efeito 700Hz -> 600Hz (Um pouco mais agudo)
       else if (distRoda >= 18) {
           imgFile = "/7B.bmp";
-          buzzerMelodicTone(700, 600, FAST_BIP_MS);
+          buzzerCustomTone(700, FAST_BIP_MS);
       }
       else if (distRoda >= 16) {
           imgFile = "/8B.bmp";
-          buzzerMelodicTone(700, 600, FAST_BIP_MS);
+          buzzerCustomTone(700, FAST_BIP_MS);
       }
       else if (distRoda >= 14) {
           imgFile = "/9B.bmp";
-          buzzerMelodicTone(700, 600, ((FAST_BIP_MS)-100));
+          buzzerCustomTone(700, ((FAST_BIP_MS)-100));
       }
       else if (distRoda >= 13) {
           imgFile = "/10B.bmp";
-          buzzerMelodicTone(700, 600, ((FAST_BIP_MS)-150));
+          buzzerCustomTone(700, ((FAST_BIP_MS)-150));
       }
       // ZONA 3 (Crítica): Som Contínuo Agudo (Mantém o padrão de alerta máximo)
       else if (distRoda >= 9) {
