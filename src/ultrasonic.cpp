@@ -15,11 +15,15 @@ float lerDistancia(int pinTrig, int pinEcho) {
     delayMicroseconds(10);
     digitalWrite(pinTrig, LOW);
 
-    // 2. Lê o Echo (Timeout de 15ms ~ 2.5 metros para não travar o código)
-    long duration = pulseIn(pinEcho, HIGH, 15000);
+    // 2. Lê o Echo com timeout maior
+    long duration = pulseIn(pinEcho, HIGH, 23200); // ~400cm para ter margem
 
-    if (duration == 0) return -1; // Sem leitura
+    if (duration == 0) {
+        return -1; // Sem leitura
+    }
 
     // 3. Calcula distância em cm
-    return duration * 0.034 / 2;
+    float distancia = duration * 0.034 / 2;
+    
+    return distancia;
 }

@@ -45,8 +45,9 @@
 #define ECHO_DIR   39
 
 #define TRIG_RODA  6 
-#define ECHO_RODA  7  
-#define DIST_RODA_MAX 50 // Aumentado para cobrir a faixa de >40cm
+#define ECHO_RODA  7
+#define DIST_RODA_MIN 20  // Distância mínima de medição
+#define DIST_RODA_MAX 100 // Distância máxima de medição
 
 // --- CONFIGURAÇÕES DA TELA ---
 #define TELA_LARGURA  76

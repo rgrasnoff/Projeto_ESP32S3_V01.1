@@ -12,7 +12,11 @@ unsigned long lastDetectionTras = 0;
 
 float lastValidDistTras = 0;     
 unsigned long lastBlinkTimer = 0; 
-bool blinkState = false;          
+bool blinkState = false;
+
+// Monitoramento em tempo real da roda
+unsigned long lastMonitoringTime = 0;
+const unsigned long MONITORING_INTERVAL = 100; // Atualiza a cada 100ms          
 
 void setup() {
   Serial.begin(115200);
@@ -43,60 +47,81 @@ void loop() {
       setRelay(MCP_RELE_PISCA, RELE_DESLIGADO);
 
       float distRoda = lerDistancia(TRIG_RODA, ECHO_RODA);
+      
+      // Monitoramento em tempo real da distância
+      unsigned long currentTime = millis();
+      if (currentTime - lastMonitoringTime >= MONITORING_INTERVAL) {
+          Serial.print("[RODA] Leitura bruta: ");
+          Serial.print(distRoda);
+          Serial.print(" cm | ");
+          
+          if (distRoda < 0) {
+              Serial.println("SEM LEITURA (timeout)");
+          } else if (distRoda < 20) {
+              Serial.println("MUITO PRÓXIMO (< 20cm)");
+          } else if (distRoda > 100) {
+              Serial.println("MUITO DISTANTE (> 100cm)");
+          } else {
+              Serial.println("OK");
+          }
+          lastMonitoringTime = currentTime;
+      }
+      
       const char* imgFile = "";
       
-      if (distRoda > 40) {
+      // Se estiver fora da faixa de medição, desativa som e exibe imagem de espera
+      if (distRoda < 0 || distRoda < 20 || distRoda > 100) {
           imgFile = "/0B.bmp";
           buzzerOff();
       }
       // ZONA 1 (Distante): Efeito 500Hz -> 400Hz
-      else if (distRoda >= 37) {
+      else if (distRoda >= 97) {
           imgFile = "/1B.bmp";
           buzzerCustomTone(500, SLOW_BIP_MS);
       }
-      else if (distRoda >= 34) {
+      else if (distRoda >= 94) {
           imgFile = "/2B.bmp";
           buzzerCustomTone(500, SLOW_BIP_MS);
       }
-      else if (distRoda >= 30) {
+      else if (distRoda >= 90) {
           imgFile = "/3B.bmp";
           buzzerCustomTone(500, SLOW_BIP_MS);
       }
-      else if (distRoda >= 27) {
+      else if (distRoda >= 85) {
           imgFile = "/4B.bmp";
           buzzerCustomTone(500, ((SLOW_BIP_MS) - 100));
       }
-      else if (distRoda >= 24) {
+      else if (distRoda >= 80) {
           imgFile = "/5B.bmp";
           buzzerCustomTone(500, ((SLOW_BIP_MS) - 100));
       }
-      else if (distRoda >= 20) {
+      else if (distRoda >= 77) {
           imgFile = "/6B.bmp";
           buzzerCustomTone(500, ((SLOW_BIP_MS) - 150));
       }
       // ZONA 2 (Média): Efeito 700Hz -> 600Hz (Um pouco mais agudo)
-      else if (distRoda >= 18) {
+      else if (distRoda >= 70) {
           imgFile = "/7B.bmp";
           buzzerCustomTone(700, FAST_BIP_MS);
       }
-      else if (distRoda >= 16) {
+      else if (distRoda >= 64) {
           imgFile = "/8B.bmp";
           buzzerCustomTone(700, FAST_BIP_MS);
       }
-      else if (distRoda >= 14) {
+      else if (distRoda >= 57) {
           imgFile = "/9B.bmp";
           buzzerCustomTone(700, ((FAST_BIP_MS)-100));
       }
-      else if (distRoda >= 13) {
+      else if (distRoda >= 54) {
           imgFile = "/10B.bmp";
           buzzerCustomTone(700, ((FAST_BIP_MS)-150));
       }
       // ZONA 3 (Crítica): Som Contínuo Agudo (Mantém o padrão de alerta máximo)
-      else if (distRoda >= 9) {
+      else if (distRoda >= 50) {
           imgFile = "/11B.bmp";
           buzzerCustomTone(FREQ_800HZ, 0); 
       }
-      else if (distRoda >= 7) {
+      else if (distRoda >= 45) {
           imgFile = "/12B.bmp";
           buzzerCustomTone(FREQ_800HZ, 0);
       }
@@ -126,6 +151,19 @@ void loop() {
       else handleBuzzerBeeping(); 
 
       unsigned long currentTime = millis();
+      // Se o botão de freio estiver ativo, garantir que tanto o relé de freio quanto o pisca estejam desligados
+      // Mas continuar lendo os sensores laterais (ESQ/DIR). Apenas ignorar o sensor traseiro.
+      if (modoFreioAtivo) {
+          setRelay(MCP_RELE_FREIO, RELE_DESLIGADO);
+          setRelay(MCP_RELE_PISCA, RELE_DESLIGADO);
+          // Resetar estado de piscagem para evitar intermitência quando sair do freio
+          blinkState = false;
+          lastBlinkTimer = currentTime;
+          // Garantir que a detecção traseira esteja zerada
+          lastDetectionTras = 0;
+          lastValidDistTras = 0;
+          // Não sair do loop; permitir leitura dos sensores laterais abaixo
+      }
 
       // --- A. LEITURA ---
       float distEsq = lerDistancia(TRIG_ESQ, ECHO_ESQ);
@@ -187,8 +225,13 @@ void loop() {
       } 
       else {
           setRelay(MCP_RELE_FREIO, RELE_DESLIGADO);
+          // Quando há detecção em AMBOS os lados, faz o pisca piscar
           if (ativoEsq && ativoDir) {
-              setRelay(MCP_RELE_PISCA, RELE_LIGADO); 
+              if (currentTime - lastBlinkTimer >= TEMPO_PISCA_TRAS) {
+                  blinkState = !blinkState; 
+                  lastBlinkTimer = currentTime;
+              }
+              setRelay(MCP_RELE_PISCA, blinkState ? RELE_LIGADO : RELE_DESLIGADO);
           } else {
               setRelay(MCP_RELE_PISCA, RELE_DESLIGADO);
           }
